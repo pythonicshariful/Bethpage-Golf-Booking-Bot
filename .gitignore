@@ -11,3 +11,6 @@ env/
 # Credentials and logs
 *.log
 credentials.json
+build/
+dist/
+*.spec

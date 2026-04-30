@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 import imaplib
 import email
 from email.header import decode_header
@@ -52,14 +53,17 @@ def get_otp_from_email(imap_email, app_password, log_callback=None):
             if msg.is_multipart():
                 for part in msg.walk():
                     content_type = part.get_content_type()
-                    if content_type == "text/plain":
-                        body = part.get_payload(decode=True).decode(errors="ignore")
-                        break
+                    if content_type in ["text/plain", "text/html"]:
+                        body += part.get_payload(decode=True).decode(errors="ignore") + " "
             else:
                 body = msg.get_payload(decode=True).decode(errors="ignore")
 
+            # Clean HTML tags to make parsing easier
+            body_clean = re.sub(r'<[^>]+>', ' ', body)
+
             # Find OTP: "Your booking code is: 123456"
-            match = re.search(r"Your booking code is: (\d+)", body)
+            # \s* allows for spaces, newlines, etc. between the text and the number
+            match = re.search(r"Your booking code is:\s*(\d+)", body_clean, re.IGNORECASE)
             if match:
                 otp = match.group(1)
                 log(f"Auto-OTP found in email: {otp}")
@@ -77,7 +81,7 @@ def parse_time(time_str):
     """Converts '9:30am' or '1:15pm' to minutes since midnight."""
     return datetime.strptime(time_str.lower().strip(), "%I:%M%p").hour * 60 + datetime.strptime(time_str.lower().strip(), "%I:%M%p").minute
 
-def run_automation(email, password, course_name, target_year, target_month, target_day, start_time_str, end_time_str, players_needed, log_callback=None, otp_callback=None, price_callback=None, card_info=None, headless=False):
+def run_automation(email, password, course_name, target_year, target_month, target_day, start_time_str, end_time_str, players_needed, booking_class="Non Resident", log_callback=None, otp_callback=None, price_callback=None, card_info=None, headless=False, imap_info=None):
     def log(message):
         print(message)
         if log_callback:
@@ -125,11 +129,11 @@ def run_automation(email, password, course_name, target_year, target_month, targ
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", submitbutton)
         driver.execute_script("arguments[0].click();", submitbutton)
 
-        # 5. Non-Resident Button
-        log("Selecting booking class (Non-Resident)...")
-        nonresidential = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(normalize-space(),'Non Resident')]")))
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", nonresidential)
-        driver.execute_script("arguments[0].click();", nonresidential)
+        # 5. Booking Class Button
+        log(f"Selecting booking class ({booking_class})...")
+        booking_class_btn = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(normalize-space(),'{booking_class}')]")))
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", booking_class_btn)
+        driver.execute_script("arguments[0].click();", booking_class_btn)
 
         # 6. Course (Schedule) Selection
         log(f"Selecting course: {course_name}...")
@@ -208,26 +212,37 @@ def run_automation(email, password, course_name, target_year, target_month, targ
                                 log(f"Applying OTP: {otp_code}")
                                 otp_input = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "input[name='reservation_confirmation_uid']")))
                                 
-                                # Clear existing value and type new one
+                                # Clear existing value and type new one like a human
                                 otp_input.clear()
-                                otp_input.send_keys(otp_code)
+                                actions = ActionChains(driver)
+                                actions.move_to_element(otp_input).click().perform()
+                                time.sleep(0.5)
+                                for char in otp_code:
+                                    otp_input.send_keys(char)
+                                    time.sleep(0.15) # Human typing delay
+                                time.sleep(1.5) # Wait for UI validation events to fire
                                 
                                 # Click the Book Time button after entering OTP
                                 try:
-                                    # Use a more robust selector and handle potential stale element
                                     log("Waiting for 'Book Time' button...")
-                                    time.sleep(1)
-                                    book_time_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-loading-text='Booking time...']")))
-                                    log("Clicking 'Book Time' button...")
-                                    driver.execute_script("arguments[0].click();", book_time_btn)
+                                    buttons = driver.find_elements(By.CSS_SELECTOR, "button.js-book-button")
+                                    clicked = False
+                                    for btn in buttons:
+                                        if btn.is_displayed():
+                                            log("Clicking visible 'Book Time' button natively...")
+                                            actions = ActionChains(driver)
+                                            actions.move_to_element(btn).pause(0.5).click().perform()
+                                            clicked = True
+                                            break
+                                    if not clicked:
+                                        log("No visible 'Book Time' button found, trying enter key...")
+                                        otp_input.send_keys(Keys.ENTER)
                                 except Exception as be:
                                     log(f"Warning: Book button error: {be}")
                                     try:
-                                        # Fallback to general book button class
-                                        alt_btn = driver.find_element(By.CSS_SELECTOR, ".js-book-button")
-                                        driver.execute_script("arguments[0].click();", alt_btn)
-                                    except:
                                         otp_input.send_keys(Keys.ENTER)
+                                    except:
+                                        pass
                                 
                                 time.sleep(4) # Wait for validation to complete or redirect
                                 
