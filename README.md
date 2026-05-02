@@ -6,13 +6,30 @@ Welcome to the Bethpage Golf Booking Bot! This application fully automates the p
 
 ## 🚀 How to Run the Application
 
-You do not need to install Python or know how to code to use this bot. It has been packaged into an easy-to-use executable (`.exe`).
+You do not need to install Python or know how to code to use this bot. It has been packaged into a single standalone executable (`.exe`).
 
 1. Open the project folder on your computer.
-2. Navigate into the **`dist`** folder, and then into the **`Bethpage Booking Bot`** folder.
-3. Find the file named **`Bethpage Booking Bot.exe`** (it will likely have a standard application icon).
+2. Navigate into the **`dist`** folder.
+3. Find the file named **`BethpageBot.exe`**.
 4. **Double-click** the file to launch the Graphical User Interface (GUI).
    > *Tip: You can right-click this file, select "Send to", and choose "Desktop (create shortcut)" so you can launch it easily from your desktop in the future.*
+
+---
+
+## 🛠️ For Developers (How to Build)
+
+If you want to modify the code and rebuild the executable yourself, follow these steps:
+
+### 1. Install Dependencies
+```bash
+pip install pyinstaller webdriver-manager selenium
+```
+
+### 2. Build the Standalone EXE
+Run this command from the project root:
+```bash
+python -m PyInstaller --noconfirm --onefile --windowed --name "BethpageBot" --clean --collect-all selenium "gui.py"
+```
 
 ---
 

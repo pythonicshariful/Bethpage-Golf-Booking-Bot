@@ -2,6 +2,17 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
 .db
 .DS_Store
 .env

@@ -12,6 +12,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import Select
 import time
+from webdriver_manager.chrome import ChromeDriverManager
+import selenium.webdriver.chrome.webdriver
 
 from datetime import datetime
 
@@ -95,7 +97,14 @@ def run_automation(email, password, course_name, target_year, target_month, targ
     
     chrome_options.add_experimental_option("detach", True)
     
-    driver = webdriver.Chrome(options=chrome_options)
+    log("Checking/Installing required Chrome Driver...")
+    try:
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        log("Chrome Driver ready.")
+    except Exception as e:
+        log(f"Failed to initialize Chrome Driver: {e}")
+        return None
+        
     driver.maximize_window()
     url = 'https://foreupsoftware.com/index.php/booking/19765/2431#/teetimes'
     log(f"Navigating to {url}...")
