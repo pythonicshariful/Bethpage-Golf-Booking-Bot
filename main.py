@@ -81,7 +81,8 @@ def get_otp_from_email(imap_email, app_password, log_callback=None):
 
 def parse_time(time_str):
     """Converts '9:30am' or '1:15pm' to minutes since midnight."""
-    return datetime.strptime(time_str.lower().strip(), "%I:%M%p").hour * 60 + datetime.strptime(time_str.lower().strip(), "%I:%M%p").minute
+    clean_time_str = time_str.lower().replace(" ", "")
+    return datetime.strptime(clean_time_str, "%I:%M%p").hour * 60 + datetime.strptime(clean_time_str, "%I:%M%p").minute
 
 def run_automation(email, password, course_name, target_year, target_month, target_day, start_time_str, end_time_str, players_needed, booking_class="Non Resident", log_callback=None, otp_callback=None, price_callback=None, card_info=None, headless=False, imap_info=None):
     def log(message):

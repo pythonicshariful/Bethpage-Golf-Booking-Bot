@@ -23,7 +23,7 @@ class GolfBookingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Bethpage Golf Booking Bot")
-        self.root.geometry("700x900")
+        self.root.geometry("1100x700")
         
         # --- Premium Theme Colors ---
         BG_COLOR = "#0f172a"        # Deep slate background
@@ -120,8 +120,17 @@ class GolfBookingApp:
         ttk.Label(header_frame, text="Bethpage Booking Bot", style="Header.TLabel").pack()
         ttk.Label(header_frame, text="Automated Tee Time Reservation System", background=BG_COLOR, foreground=MUTED_TEXT, font=("Segoe UI", 10)).pack(pady=(5, 0))
 
+        content_frame = tk.Frame(self.main_frame, bg=BG_COLOR)
+        content_frame.pack(fill="x", expand=True, padx=10)
+        
+        left_col = tk.Frame(content_frame, bg=BG_COLOR)
+        left_col.pack(side="left", fill="both", expand=True, padx=5)
+        
+        right_col = tk.Frame(content_frame, bg=BG_COLOR)
+        right_col.pack(side="left", fill="both", expand=True, padx=5)
+
         # --- 1. Account Credentials Card ---
-        cred_card = create_card(self.main_frame, "Account Credentials")
+        cred_card = create_card(right_col, "Account Credentials")
         
         self.email_entry, _ = create_field(cred_card, "ForeUp Email Address")
         self.pass_entry, _ = create_field(cred_card, "ForeUp Password", show="•")
@@ -140,7 +149,7 @@ class GolfBookingApp:
         self.app_pass_entry.pack(fill="x", ipady=2)
 
         # --- 2. Booking Settings Card ---
-        book_card = create_card(self.main_frame, "Booking Settings")
+        book_card = create_card(left_col, "Booking Settings")
         
         self.course_var = tk.StringVar(value="Bethpage Black Course")
         self.course_combo, _ = create_field(book_card, "Select Course", ttk.Combobox, textvariable=self.course_var, state="readonly", values=(
@@ -187,7 +196,7 @@ class GolfBookingApp:
         times_list = []
         for period in ["am", "pm"]:
             for hour in range(1, 13):
-                for minute in ["00", "15", "30", "45"]:
+                for minute in ["00", "10", "20", "30", "40", "50"]:
                     times_list.append(f"{hour}:{minute}{period}")
                     
         time_row = tk.Frame(book_card, bg=CARD_BG)
@@ -197,12 +206,12 @@ class GolfBookingApp:
         
         ttk.Label(stf, text="Start Time", font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 4))
         self.start_time_var = tk.StringVar(value="9:00am")
-        self.start_time_combo = ttk.Combobox(stf, textvariable=self.start_time_var, state="readonly", values=times_list)
+        self.start_time_combo = ttk.Combobox(stf, textvariable=self.start_time_var, values=times_list)
         self.start_time_combo.pack(fill="x", ipady=2)
         
         ttk.Label(etf, text="End Time", font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 4))
         self.end_time_var = tk.StringVar(value="1:00pm")
-        self.end_time_combo = ttk.Combobox(etf, textvariable=self.end_time_var, state="readonly", values=times_list)
+        self.end_time_combo = ttk.Combobox(etf, textvariable=self.end_time_var, values=times_list)
         self.end_time_combo.pack(fill="x", ipady=2)
         
         pi_row = tk.Frame(book_card, bg=CARD_BG)
@@ -221,7 +230,7 @@ class GolfBookingApp:
         self.interval_combo.pack(fill="x", ipady=2)
 
         # --- 3. Execution Options Card ---
-        exec_card = create_card(self.main_frame, "Execution Options")
+        exec_card = create_card(right_col, "Execution Options")
         
         exec_row = tk.Frame(exec_card, bg=CARD_BG)
         exec_row.pack(fill="x", pady=(0, 12))
@@ -237,7 +246,7 @@ class GolfBookingApp:
         self.target_time_frame = tk.Frame(exec_row, bg=CARD_BG)
         ttk.Label(self.target_time_frame, text="Target Time", font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 4))
         self.target_time_var = tk.StringVar(value="7:00pm")
-        self.target_time_combo = ttk.Combobox(self.target_time_frame, textvariable=self.target_time_var, state="readonly", values=times_list)
+        self.target_time_combo = ttk.Combobox(self.target_time_frame, textvariable=self.target_time_var, values=times_list)
         self.target_time_combo.pack(fill="x", ipady=2)
         
         self.show_browser_var = tk.BooleanVar(value=False)
@@ -252,7 +261,7 @@ class GolfBookingApp:
         self.show_browser_check.pack(anchor="w", pady=(5, 0))
 
         # --- 4. Payment Info Card ---
-        pay_card = create_card(self.main_frame, "Payment Information")
+        pay_card = create_card(right_col, "Payment Information")
         pay_row = tk.Frame(pay_card, bg=CARD_BG)
         pay_row.pack(fill="x")
         
@@ -276,31 +285,64 @@ class GolfBookingApp:
         footer_frame = tk.Frame(self.main_frame, bg=BG_COLOR, padx=20)
         footer_frame.pack(fill="x", pady=(10, 30))
         
-        price_frame = tk.Frame(footer_frame, bg=BG_COLOR)
+        footer_left = tk.Frame(footer_frame, bg=BG_COLOR)
+        footer_left.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
+        footer_right = tk.Frame(footer_frame, bg=BG_COLOR)
+        footer_right.pack(side="right", fill="both", expand=True, padx=(10, 0))
+        
+        price_frame = tk.Frame(footer_left, bg=BG_COLOR)
         price_frame.pack(fill="x", pady=(0, 15))
         
         self.price_label = tk.Label(price_frame, text="Total Price: $0.00", bg=BG_COLOR, foreground="#22c55e", font=("Segoe UI", 16, "bold"))
-        self.price_label.pack()
+        self.price_label.pack(anchor="w")
         
-        self.submit_btn = ttk.Button(footer_frame, text="START AUTOMATION", command=self.start_booking)
-        self.submit_btn.pack(fill="x", ipady=8)
+        btn_frame = tk.Frame(footer_left, bg=BG_COLOR)
+        btn_frame.pack(fill="x", pady=(0, 15))
         
-        status_frame = tk.Frame(footer_frame, bg=BG_COLOR, pady=15)
+        self.submit_btn = ttk.Button(btn_frame, text="START", command=self.start_booking)
+        self.submit_btn.pack(side="left", fill="x", expand=True, padx=(0, 5), ipady=8)
+        
+        self.stop_btn = ttk.Button(btn_frame, text="STOP", command=self.stop_booking)
+        self.stop_btn.state(['disabled'])
+        self.stop_btn.pack(side="left", fill="x", expand=True, padx=5, ipady=8)
+        
+        self.restart_btn = ttk.Button(btn_frame, text="RESTART", command=self.restart_booking)
+        self.restart_btn.state(['disabled'])
+        self.restart_btn.pack(side="left", fill="x", expand=True, padx=(5, 0), ipady=8)
+        
+        status_frame = tk.Frame(footer_left, bg=BG_COLOR, pady=15)
         status_frame.pack(fill="x")
         tk.Label(status_frame, text="Status: ", bg=BG_COLOR, foreground=TEXT_COLOR, font=("Segoe UI", 10, "bold")).pack(side="left")
         self.status_label = tk.Label(status_frame, text="Ready to start", bg=BG_COLOR, foreground=MUTED_TEXT, font=("Segoe UI", 10, "italic"))
         self.status_label.pack(side="left")
         
         # Log Box with Border
-        log_border = tk.Frame(footer_frame, bg=BORDER_COLOR, padx=1, pady=1)
-        log_border.pack(fill="x")
-        self.log_area = scrolledtext.ScrolledText(log_border, height=10, bg=ENTRY_BG, fg="#22c55e", font=("Consolas", 9), borderwidth=0, highlightthickness=0)
+        log_border = tk.Frame(footer_right, bg=BORDER_COLOR, padx=1, pady=1)
+        log_border.pack(fill="both", expand=True)
+        self.log_area = scrolledtext.ScrolledText(log_border, height=8, bg=ENTRY_BG, fg="#22c55e", font=("Consolas", 9), borderwidth=0, highlightthickness=0)
         self.log_area.pack(fill="both", expand=True, padx=1, pady=1)
         self.log_area.config(state="disabled")
 
         self.last_log_msg = ""
+        self.is_running = False
 
     # --- Logic Methods ---
+    def stop_booking(self):
+        self.stop_requested = True
+        self.log_message("Stop requested... waiting for current operation to finish.")
+        self.stop_btn.state(['disabled'])
+        self.restart_btn.state(['disabled'])
+
+    def restart_booking(self):
+        self.log_message("Restart requested...")
+        self.stop_booking()
+        threading.Thread(target=self._wait_and_restart, daemon=True).start()
+
+    def _wait_and_restart(self):
+        while getattr(self, 'is_running', False):
+            time.sleep(0.5)
+        self.root.after(0, self.start_booking)
     def toggle_target_time(self, event=None):
         if self.mode_var.get() == "Immediately":
             self.target_time_frame.pack_forget()
@@ -358,16 +400,19 @@ class GolfBookingApp:
             messagebox.showerror("Error", "Please fill in all fields")
             return
 
-        self.submit_btn.config(state="disabled")
+        self.submit_btn.state(['disabled'])
+        self.stop_btn.state(['!disabled'])
+        self.restart_btn.state(['!disabled'])
         self.stop_requested = False
+        self.is_running = True
         
-        thread = threading.Thread(target=self.run_process_loop, args=(email, password, course, booking_class, year, month, day, start_time, end_time, players, interval, card_num, card_exp, card_cvv, headless, imap_email, app_pass))
+        thread = threading.Thread(target=self.run_process_loop, args=(email, password, course, booking_class, year, month, day, start_time, end_time, players, interval, card_num, card_exp, card_cvv, headless, imap_email, app_pass), daemon=True)
         thread.start()
 
     def run_process_loop(self, email, password, course, booking_class, year, month, day, start_time, end_time, players, interval, card_num, card_exp, card_cvv, headless, imap_email, app_pass):
         mode = self.mode_var.get()
         if mode == "Scheduled Time":
-            target_time_str = self.target_time_var.get()
+            target_time_str = self.target_time_var.get().replace(" ", "")
             try:
                 now = datetime.now()
                 target_time_obj = datetime.strptime(target_time_str, "%I:%M%p").replace(
@@ -381,7 +426,7 @@ class GolfBookingApp:
                 self.log_message(f"Waiting for scheduled time: {target_time_obj.strftime('%Y-%m-%d %I:%M%p')}")
                 
                 while datetime.now() < target_time_obj:
-                    if getattr(self, 'stop_requested', False): return
+                    if getattr(self, 'stop_requested', False): break
                     diff = target_time_obj - datetime.now()
                     hours, remainder = divmod(diff.seconds, 3600)
                     minutes, seconds = divmod(remainder, 60)
@@ -429,7 +474,12 @@ class GolfBookingApp:
                 self.root.after(0, lambda msg=f"Error: {str(e)}": self.status_label.config(text=msg, foreground="#ef4444"))
                 break
         
-        self.root.after(0, lambda: self.submit_btn.config(state="normal"))
+        self.is_running = False
+        def _reset_buttons():
+            self.submit_btn.state(['!disabled'])
+            self.stop_btn.state(['disabled'])
+            self.restart_btn.state(['disabled'])
+        self.root.after(0, _reset_buttons)
 
 if __name__ == "__main__":
     root = tk.Tk()
